@@ -1,243 +1,307 @@
-/* App.css — Web3 Voting DApp Finalized Design ✨ */
-
 :root {
-  --bg: #0e0e0e;
-  --text: #f6f6f6;
-  --accent: #c6ffb4;
-  --gold: #bfa76f;
-  --border: #1e1e1e;
+  --bg: #111;
+  --text: #fff;
+  --accent: #e6c15b;
+  --muted: #888;
+  --input-bg: #181818;
+}
+
+[data-theme="light"] {
+  --bg: #f7f7f7;
+  --text: #181818;
+  --accent: #e6c15b;
+  --muted: #888;
+  --input-bg: #fff;
 }
 
 body {
   background: var(--bg);
   color: var(--text);
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Inter', 'Outfit', Arial, sans-serif;
   margin: 0;
-}
-
-h1, h2, h3 {
-  font-family: 'Playfair Display', serif;
-  color: var(--gold);
+  letter-spacing: 0.01em;
+  transition: background 0.3s, color 0.3s;
 }
 
 .container {
-  max-width: 800px;
-  margin: auto;
-  padding: 3rem 1.5rem;
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 4rem 1.5rem 2rem 1.5rem;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
   position: relative;
+  z-index: 1;
 }
 
-.hero h1 {
-  font-size: 3rem;
-  margin-bottom: 1rem;
+header {
+  text-align: center;
+  margin-bottom: 3rem;
 }
 
-.hero p {
-  max-width: 600px;
-  margin: auto;
-  font-size: 1.15rem;
-  color: #ccc;
-  font-family: 'Outfit', sans-serif;
+h1 {
+  font-size: 3.2rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  margin: 0 0 1.2rem 0;
+  color: var(--text);
 }
 
-.chapter {
-  margin: 4rem 0;
+h1.accent {
+  color: var(--accent);
+  font-style: italic;
 }
 
-.chapter p {
+h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 2.5rem 0 1rem 0;
+  color: var(--text);
+}
+
+p {
+  color: var(--muted);
   font-size: 1.1rem;
-  line-height: 1.8;
-}
-
-.specGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 1.5rem;
-  margin: 4rem 0;
-}
-
-.specGrid div {
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid var(--border);
-  padding: 1.5rem;
-  border-radius: 12px;
-  backdrop-filter: blur(8px);
+  line-height: 1.7;
+  margin: 0 0 1.5rem 0;
 }
 
 .voteBox {
-  padding: 2rem 0;
+  margin: 2.5rem 0 0 0;
+  padding: 2.5rem 2rem;
+  background: var(--input-bg);
+  border-radius: 1.5rem;
+  box-shadow: 0 2px 32px 0 rgba(0,0,0,0.08);
 }
 
 label {
-  display: block;
+  font-size: 1.1rem;
+  font-weight: 600;
   margin-bottom: 0.5rem;
-  font-weight: bold;
+  display: block;
+  color: var(--text);
+}
+
+input[type="text"] {
+  width: 100%;
+  padding: 1rem;
+  border-radius: 0.7rem;
+  border: none;
+  background: var(--input-bg);
+  color: var(--text);
+  font-size: 1.1rem;
+  margin-bottom: 1.5rem;
+  outline: none;
+  box-shadow: 0 1px 4px 0 rgba(0,0,0,0.04);
+  transition: background 0.2s, color 0.2s;
+}
+
+[data-theme="light"] input[type="text"] {
+  background: #fff;
+  color: #181818;
 }
 
 select {
   width: 100%;
-  padding: 0.75rem;
-  border-radius: 10px;
-  border: 1px solid var(--accent);
-  background: #111;
-  color: var(--accent);
-  font-size: 1rem;
-  margin-bottom: 1rem;
+  padding: 1rem;
+  border-radius: 0.7rem;
+  border: none;
+  background: #181818;
+  color: var(--text);
+  font-size: 1.1rem;
+  margin-bottom: 2rem;
+  outline: none;
+  transition: box-shadow 0.2s;
+  box-shadow: 0 1px 4px 0 rgba(0,0,0,0.04);
+}
+
+[data-theme="light"] select {
+  background: #fff;
+  color: #181818;
 }
 
 button {
-  padding: 0.75rem 1.5rem;
-  font-size: 1rem;
-  border: none;
-  border-radius: 10px;
-  cursor: pointer;
-  margin-right: 1rem;
-  transition: all 0.2s ease;
-  font-weight: 600;
-}
-
-/* ✅ Vote Button */
-.voteBtn {
   background: var(--accent);
-  color: #000;
-  box-shadow: 0 0 8px rgba(198, 255, 180, 0.2);
-}
-.voteBtn:hover {
-  background: #b7ffcc;
-  transform: scale(1.04);
-}
-
-/* 🔄 Reset Wallet Button */
-.resetBtn {
-  background: #222;
-  color: #ccc;
-  border: 1px solid #393939;
-}
-.resetBtn:hover {
-  background: #333;
-  color: #fff;
-  transform: scale(1.03);
+  color: #111;
+  font-size: 1.1rem;
+  font-weight: 700;
+  border: none;
+  border-radius: 0.7rem;
+  padding: 1rem 2.2rem;
+  margin-right: 1rem;
+  margin-bottom: 1rem;
+  cursor: pointer;
+  transition: background 0.18s, color 0.18s, box-shadow 0.18s;
+  box-shadow: 0 2px 16px 0 rgba(230,193,91,0.08);
+  letter-spacing: 0.01em;
 }
 
-/* 📥 Export to Excel Button */
-.exportBtn {
-  background: #fffbe2;
-  color: #1e1e1e;
-  border: 1px solid #e2c465;
-  box-shadow: 0 0 8px rgba(255, 222, 89, 0.3);
-}
-.exportBtn:hover {
-  background: #fff18a;
-  transform: scale(1.04);
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
-/* 👛 Wallet Display */
-.wallet {
-  font-size: 0.85rem;
-  background: #1a1a1a;
-  border: 1px solid #444;
-  padding: 1rem;
-  border-radius: 8px;
-  margin-bottom: 1.5rem;
-  color: #ccc;
-  word-break: break-word;
-  font-family: monospace;
+button:hover, button:focus {
+  background: #fff;
+  color: var(--accent);
+  box-shadow: 0 4px 24px 0 rgba(230,193,91,0.18);
 }
 
-/* 🔔 Message Box */
-.message {
-  margin-top: 1rem;
-  padding: 1rem;
-  border-radius: 8px;
-  text-align: center;
+.resetBtn, .exportBtn {
+  background: transparent;
+  color: var(--muted);
+  border: 1.5px solid var(--muted);
+  box-shadow: none;
 }
 
-.success {
-  background: #e2ffe9;
-  color: #00663a;
-}
-.error {
-  background: #ffe2e2;
-  color: #aa0000;
+.resetBtn:hover, .exportBtn:hover {
+  background: var(--accent);
+  color: #111;
+  border-color: var(--accent);
 }
 
-/* 🌟 Glowing UI Backdrop */
-.glow-bg {
+.theme-toggle {
   position: absolute;
-  top: -100px;
-  left: -150px;
-  width: 300px;
-  height: 300px;
-  background: radial-gradient(circle, var(--accent) 0%, transparent 80%);
-  filter: blur(100px);
-  z-index: -1;
+  top: 1.5rem;
+  right: 2rem;
+  background: transparent;
+  color: var(--accent);
+  border: 1.5px solid var(--accent);
+  border-radius: 2rem;
+  padding: 0.5rem 1.2rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.18s, color 0.18s, border 0.18s;
+  z-index: 10;
 }
 
-/* 📊 Vote Results Styling */
+.theme-toggle:hover {
+  background: var(--accent);
+  color: #111;
+}
+
+.wallet {
+  font-size: 0.95rem;
+  background: #191919;
+  padding: 1rem 1.2rem;
+  border-radius: 0.7rem;
+  margin-bottom: 2rem;
+  color: var(--muted);
+  font-family: monospace;
+  word-break: break-all;
+}
+
+[data-theme="light"] .wallet {
+  background: #f2f2f2;
+  color: #888;
+}
+
 .results {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 1.5rem;
-  margin-top: 2rem;
-  animation: fade-in 0.5s ease forwards;
+  margin-top: 2.5rem;
+  background: transparent;
+  border-radius: 1rem;
+  padding: 1.5rem 1rem 0.5rem 1rem;
 }
 
 .results h3 {
-  margin-top: 0;
-  font-size: 1.2rem;
-  color: var(--gold);
+  font-size: 1.3rem;
+  color: var(--accent);
+  margin-bottom: 1.2rem;
+  letter-spacing: 0.01em;
+  font-weight: 700;
+  text-transform: uppercase;
 }
 
-.results ul {
+.vote-tally-list {
   list-style: none;
   padding: 0;
   margin: 0;
 }
-.results li {
+
+.vote-tally-item {
   display: flex;
   justify-content: space-between;
-  padding: 0.75rem;
-  border-bottom: 1px solid var(--border);
-  font-size: 1.1rem;
-  transition: background 0.3s ease;
+  align-items: center;
+  padding: 1.1rem 0;
+  font-size: 1.18rem;
+  border-bottom: 1px solid #222;
+  transition: background 0.3s, color 0.3s;
+  font-weight: 500;
+  letter-spacing: 0.01em;
 }
-.results li:last-child {
+
+.vote-tally-item:last-child {
   border-bottom: none;
 }
 
-.results li.votedSelf {
-  background: rgba(198, 255, 180, 0.1);
-  font-weight: bold;
-  border-left: 4px solid var(--accent);
+/* Removed .vote-tally-item.votedSelf and .your-vote */
+
+.candidate-name {
+  font-size: 1.1em;
+  font-weight: 600;
+  letter-spacing: 0.01em;
 }
 
-.results li:hover {
-  background: rgba(255, 255, 255, 0.02);
-  border-radius: 6px;
+.vote-count {
+  font-size: 1.1em;
+  font-weight: 500;
+  color: var(--text);
 }
 
-/* Animations */
-@keyframes fade-in {
-  from { opacity: 0; transform: translateY(10px); }
-  to   { opacity: 1; transform: translateY(0);   }
+.vote-label {
+  font-size: 0.95em;
+  color: var(--muted);
+  margin-left: 0.2em;
 }
 
-@media (max-width: 768px) {
-  .hero h1 {
-    font-size: 2.4rem;
-  }
+.message {
+  margin-top: 2rem;
+  padding: 1.2rem;
+  border-radius: 0.7rem;
+  text-align: center;
+  font-size: 1.1rem;
+  font-weight: 600;
+  background: #181818;
+  color: var(--accent);
+  border: 1.5px solid var(--accent);
+}
 
-  .specGrid {
-    grid-template-columns: 1fr;
-  }
+.success {
+  background: #e6c15b;
+  color: #111;
+  border: none;
+}
 
+.error {
+  background: #2a0000;
+  color: #ffbaba;
+  border: 1.5px solid #ffbaba;
+}
+
+footer {
+  text-align: center;
+  color: var(--muted);
+  font-size: 1rem;
+  margin-top: 4rem;
+  letter-spacing: 0.01em;
+}
+
+@media (max-width: 600px) {
   .container {
-    padding: 3rem 1rem;
+    padding: 2rem 0.5rem 1rem 0.5rem;
   }
-
-  button {
-    width: 100%;
-    margin-bottom: 1rem;
+  .voteBox {
+    padding: 1.2rem 0.5rem;
+  }
+  h1 {
+    font-size: 2.1rem;
+  }
+  .theme-toggle {
+    right: 1rem;
+    top: 1rem;
+    padding: 0.4rem 1rem;
+    font-size: 0.95rem;
   }
 }

@@ -1,119 +1,111 @@
-// src/App.js
+import React, { useCallback, useEffect, useState } from "react";
+import { JsonRpcProvider, Wallet, Contract, parseEther } from "ethers";
+import AOS from "aos";
+import "aos/dist/aos.css";
+import "./App.css";
+import VotingABI from "./abi/VotingABI.json";
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
+import confetti from "canvas-confetti";
+import deployed from "./deployedAddress.json";
 
-import React, { useEffect, useState } from 'react';
-import { JsonRpcProvider, Wallet, Contract, parseEther } from 'ethers';
-import AOS from 'aos';
-import 'aos/dist/aos.css';
-import './App.css';
-import VotingABI from './abi/VotingABI.json';
-import * as XLSX from 'xlsx';
-import { saveAs } from 'file-saver';
-import confetti from 'canvas-confetti'; // 🎉
-import deployed from './deployedAddress.json';
+import Particles from "react-tsparticles";
+import { loadSlim } from "tsparticles-slim";
+import particleConfig from "./particles";
 
 const CONTRACT_ADDRESS = deployed.address;
-
-// For local dev, you can hardcode the funder private key or use .env
-const FUNDER_PRIVATE_KEY = '0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80'; // <-- Use your Hardhat account PK
-
-console.log("✅ PRIVATE KEY LOADED =", !!FUNDER_PRIVATE_KEY);
+const FUNDER_PRIVATE_KEY =
+  "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80";
 
 function App() {
   const [wallet, setWallet] = useState(null);
   const [provider, setProvider] = useState(null);
   const [contract, setContract] = useState(null);
   const [candidates, setCandidates] = useState([]);
-  const [selectedCandidate, setSelectedCandidate] = useState('');
-  const [message, setMessage] = useState('');
+  const [selectedCandidate, setSelectedCandidate] = useState("");
+  const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [voteCounts, setVoteCounts] = useState({});
-  const [votedFor, setVotedFor] = useState('');
+  const [theme, setTheme] = useState("dark");
+
+  // Voter ID logic
+  const [voterId, setVoterId] = useState("");
+  const [addressHasVoted, setAddressHasVoted] = useState(false);
+
+  const toggleTheme = () => {
+    const nextTheme = theme === "dark" ? "light" : "dark";
+    document.documentElement.setAttribute("data-theme", nextTheme);
+    setTheme(nextTheme);
+  };
 
   useEffect(() => {
-    AOS.init({ duration: 1200, once: true });
-  }, []);
-
-  // Load votedFor from localStorage on mount
-  useEffect(() => {
-    const storedVote = localStorage.getItem('votedFor');
-    if (storedVote) setVotedFor(storedVote);
-  }, []);
+    document.documentElement.setAttribute("data-theme", theme);
+    AOS.init({ duration: 1000, once: true });
+  }, [theme]);
 
   useEffect(() => {
     let mounted = true;
-
     const init = async () => {
       try {
         setIsLoading(true);
-
-        if (!FUNDER_PRIVATE_KEY) {
-          throw new Error('Missing FUNDER_PRIVATE_KEY in .env');
-        }
-
         const provider = new JsonRpcProvider("http://127.0.0.1:8545");
         if (mounted) setProvider(provider);
 
-        // Always generate a new wallet if no private key in localStorage
-        let storedPk = localStorage.getItem('burnerPrivateKey');
-        let burner;
+        let storedPk = localStorage.getItem("burnerPrivateKey");
+        let burner =
+          storedPk && storedPk.length > 0
+            ? new Wallet(storedPk).connect(provider)
+            : Wallet.createRandom().connect(provider);
 
-        if (storedPk) {
-          burner = new Wallet(storedPk).connect(provider);
-        } else {
-          burner = Wallet.createRandom().connect(provider);
-          localStorage.setItem('burnerPrivateKey', burner.privateKey);
+        if (!storedPk) {
+          localStorage.setItem("burnerPrivateKey", burner.privateKey);
         }
-        const nonce = await provider.getTransactionCount(burner.address); 
-        console.log("Burner wallet address:", burner.address, "Nonce:", nonce);
 
         const balance = await provider.getBalance(burner.address);
-        console.log("Burner balance before funding:", balance.toString());
-
-        // PERMANENT FIX: Always fund if balance is zero, ignore any flag
         if (balance.toString() === "0") {
-          try {
-            const funder = new Wallet(FUNDER_PRIVATE_KEY, provider);
-            console.log("Funding burner from funder:", funder.address, "to", burner.address);
-            const tx = await funder.sendTransaction({
-              to: burner.address,
-              value: parseEther('0.01'),
-            });
-            await tx.wait();
-            console.log("Funding tx complete:", tx.hash);
-          } catch (fundErr) {
-            console.error("Funding error:", fundErr);
-          }
-        } else {
-          console.log("Funding not needed or already done.");
+          const funder = new Wallet(FUNDER_PRIVATE_KEY, provider);
+          const tx = await funder.sendTransaction({
+            to: burner.address,
+            value: parseEther("0.01"),
+          });
+          await tx.wait();
         }
 
         const contract = new Contract(CONTRACT_ADDRESS, VotingABI, burner);
         const list = await contract.getCandidates();
+
         if (mounted) {
           setWallet(burner);
           setContract(contract);
           setCandidates(list);
         }
       } catch (err) {
-        console.error('Initialization error:', err);
-        if (mounted) {
-          setMessage(`❌ ${err.message || 'Initialization failed'}`);
-        }
+        setMessage("❌ Initialization failed");
       } finally {
-        if (mounted) setIsLoading(false);
+        setIsLoading(false);
       }
     };
 
     init();
-
     return () => {
       mounted = false;
-      setWallet(null);
-      setProvider(null);
-      setContract(null);
-      setCandidates([]);
     };
-  }, []); 
+  }, []);
+
+  // Check if this wallet has already voted
+  useEffect(() => {
+    const checkAddressVoted = async () => {
+      if (contract && wallet) {
+        try {
+          const voted = await contract.hasAddressVoted(wallet.address);
+          setAddressHasVoted(voted);
+        } catch {
+          setAddressHasVoted(false);
+        }
+      }
+    };
+    checkAddressVoted();
+  }, [contract, wallet]);
 
   useEffect(() => {
     if (contract && candidates.length > 0) {
@@ -124,87 +116,113 @@ function App() {
 
   const fetchVoteCounts = async () => {
     try {
-      const results = {};
-      for (let name of candidates) {
+      const result = {};
+      for (const name of candidates) {
         const count = await contract.getVotes(name);
-        results[name] = count.toString();
+        result[name] = count.toString();
       }
-      setVoteCounts(results);
+      setVoteCounts(result);
     } catch (err) {
-      console.error("Vote count error:", err);
+      // Optionally handle error
     }
   };
 
+  // Input validation
+  const isVoterIdValid = (id) => /^[a-zA-Z0-9_-]{3,32}$/.test(id);
+
+  // Only check voter status when voting is attempted
   const handleVote = async () => {
-    if (!selectedCandidate || !contract) {
-      setMessage('❌ Please select a candidate and ensure contract is connected');
+    if (addressHasVoted) {
+      setMessage("❌ This wallet has already voted.");
+      return;
+    }
+    if (!voterId) {
+      setMessage("❌ Please enter your Voter ID.");
+      return;
+    }
+    if (!isVoterIdValid(voterId)) {
+      setMessage("❌ Voter ID must be 3-32 letters, numbers, _ or -.");
+      return;
+    }
+    if (!selectedCandidate) {
+      setMessage("❌ Please select a candidate.");
       return;
     }
     try {
-      setMessage('⏳ Submitting vote...');
+      setMessage("⏳ Checking voter status...");
+      const reg = await contract.isVoterIdRegistered(voterId);
+      const voted = await contract.hasVoterIdVotedFn(voterId);
 
-      // Estimate gas before sending
-      const gasEstimate = await contract.vote.estimateGas(selectedCandidate);
-      console.log("Estimated gas for vote tx:", gasEstimate.toString());
+      if (!reg) {
+        setMessage("❌ This Voter ID is not registered.");
+        return;
+      }
+      if (voted) {
+        setMessage("❌ This Voter ID has already voted.");
+        return;
+      }
 
-      const tx = await contract.vote(selectedCandidate);
-      const receipt = await tx.wait();
+      setMessage("⏳ Submitting vote...");
+      const tx = await contract.vote(voterId, selectedCandidate);
+      await tx.wait();
 
-      // Log actual gas used
-      console.log("Gas used for vote tx:", receipt.gasUsed.toString());
-
+      confetti({ particleCount: 120, spread: 70, origin: { y: 0.6 } });
       setMessage(`✅ Voted for "${selectedCandidate}" successfully!`);
-      setVotedFor(selectedCandidate);
-      localStorage.setItem('votedFor', selectedCandidate);
-      fetchVoteCounts();
-
-      // 🎉 Confetti animation
-      confetti({
-        particleCount: 100,
-        spread: 70,
-        origin: { y: 0.6 }
-      });
+      setAddressHasVoted(true);
+      await fetchVoteCounts();
     } catch (err) {
-      setMessage(`❌ ${err.message || 'Vote failed.'}`);
+      if (err.message && err.message.includes("This wallet has already voted")) {
+        setMessage("❌ This wallet has already voted.");
+        setAddressHasVoted(true);
+      } else if (err.message && err.message.includes("Not a registered voter ID")) {
+        setMessage("❌ This Voter ID is not registered.");
+      } else if (err.message && err.message.includes("already voted")) {
+        setMessage("❌ This Voter ID has already voted.");
+      } else if (err.message && err.message.includes("Invalid candidate")) {
+        setMessage("❌ Invalid candidate.");
+      } else {
+        setMessage(`❌ ${err.message || "Vote failed"}`);
+      }
     }
   };
 
-  // Bulletproof reset: always generate a new wallet and clear all related data
-  const resetBurner = () => {
-    localStorage.removeItem('burnerPrivateKey');
-    localStorage.removeItem('votedFor');
-    setVotedFor('');
-    window.location.reload(true);
+  // Allow pressing Enter in the Voter ID input to trigger voting
+  const handleVoterIdKeyDown = (e) => {
+    if (e.key === "Enter") {
+      handleVote();
+    }
   };
 
+  // Reset burner wallet
+  const resetBurner = () => {
+    localStorage.removeItem("burnerPrivateKey");
+    window.location.reload();
+  };
+
+  // Export logs (fetches all blocks for demo; for large chains, batch or range)
   const exportVoteLogs = async () => {
     try {
-      if (!contract || !provider) {
-        throw new Error('Contract or provider not initialized');
-      }
-
       const latestBlock = await provider.getBlockNumber();
-      const fromBlock = Math.max(0, latestBlock - 5000);
-      const logs = await contract.queryFilter(contract.filters.VoteCast(), fromBlock, latestBlock);
+      const logs = await contract.queryFilter(contract.filters.VoteCast(), 0, latestBlock);
 
       const finalData = [];
 
-      for (const log of logs) {
+      for (let log of logs) {
         const { args, blockNumber, transactionHash } = log;
-        const voter = args?.voter || "N/A";
-        const candidate = args?.candidate || "N/A";
+        const voterIdHash = args.voterIdHash;
+        const candidate = args.candidate;
 
         const [receipt, block] = await Promise.all([
           provider.getTransactionReceipt(transactionHash),
-          provider.getBlock(blockNumber)
+          provider.getBlock(blockNumber),
         ]);
 
         finalData.push({
-          "Voter Address": voter,
-          "Candidate": candidate,
+          "Voter ID Hash": voterIdHash,
+          Candidate: candidate,
           "Transaction Hash": transactionHash,
           "Block Number": blockNumber,
-          "Timestamp": new Date(block.timestamp * 1000).toLocaleString(),
+          Timestamp: new Date(block.timestamp * 1000).toLocaleString(),
           "Gas Used": receipt.gasUsed.toString(),
         });
       }
@@ -212,95 +230,159 @@ function App() {
       const worksheet = XLSX.utils.json_to_sheet(finalData);
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, "Votes");
-
       const buffer = XLSX.write(workbook, { type: "array", bookType: "xlsx" });
       const file = new Blob([buffer], { type: "application/octet-stream" });
-
       saveAs(file, "BlockchainVotes.xlsx");
     } catch (err) {
-      console.error("Export error:", err);
-      setMessage(`❌ ${err.message || 'Failed to export vote data'}`);
+      setMessage("❌ Export failed");
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="container">
-        <div className="loading">Loading...</div>
-      </div>
-    );
-  }
+  const initParticles = useCallback(async (engine) => {
+    await loadSlim(engine);
+  }, []);
 
   return (
     <div className="container">
-      <div className="glow-bg"></div>
+      <Particles id="tsparticles" init={initParticles} options={particleConfig} className="particles" />
 
-      <section className="hero" data-aos="fade">
-        <h1><span className="gold">Blockchain Voting.</span> Reinvented.</h1>
-        <p>Elegant. Immutable. Instant. Vote with full confidence—on-chain.</p>
-      </section>
+      <button className="theme-toggle" onClick={toggleTheme} aria-label="Toggle theme">
+        {theme === "dark" ? "🌞 Light Mode" : "🌙 Dark Mode"}
+      </button>
 
-      <section className="chapter" data-aos="fade-up">
-        <h2>Why Blockchain?</h2>
-        <p>Traditional voting systems suffer from fraud, opacity, and lack of trust. Our DApp ensures every vote is secure, verifiable, and public.</p>
-      </section>
-
-      <section className="specGrid" data-aos="fade-up">
-        <div><h3>🔥 Burner Wallets</h3><p>Auto-generated per user</p></div>
-        <div><h3>🔐 Smart Contract</h3><p>Immutable logic on local node</p></div>
-        <div><h3>🧠 React Web3</h3><p>Ethers.js + AOS.js integration</p></div>
-        <div><h3>📜 Real Voting</h3><p>Votes are Ethereum transactions</p></div>
-      </section>
+      <header>
+        <h1 className="accent">Blockchain Voting</h1>
+        <p>
+          Transparent. Secure. On-Chain.
+          <br />
+          Vote confidently with Web3.
+        </p>
+      </header>
 
       <section className="voteBox" data-aos="fade-up">
         {wallet && (
-          <div className="wallet">
-            <strong>Wallet:</strong><br />
+          <div className="wallet" aria-label="Connected wallet">
+            <strong>Wallet:</strong>
+            <br />
             {wallet.address}
           </div>
         )}
 
-        {candidates.length > 0 ? (
-          <>
-            <label>Select Candidate:</label>
-            <select value={selectedCandidate} onChange={(e) => setSelectedCandidate(e.target.value)}>
-              <option disabled value="">⬇️ Select Candidate</option>
-              {candidates.map((name, idx) => (
-                <option key={idx} value={name}>{name}</option>
-              ))}
-            </select>
-
-            <button className="voteBtn" onClick={handleVote} disabled={!selectedCandidate}>
-              ✅ Vote
-            </button>
-            <button className="resetBtn" onClick={resetBurner}>🔄 New Wallet</button>
-            <button className="exportBtn" onClick={exportVoteLogs}>📥 Export Votes</button>
-          </>
+        {isLoading ? (
+          <p>⏳ Loading...</p>
         ) : (
-          <p>ℹ️ No candidates found.</p>
+          <>
+            <label htmlFor="voter-id-input">Enter Your Voter ID</label>
+            <input
+              id="voter-id-input"
+              type="text"
+              placeholder="e.g. student001"
+              value={voterId}
+              onChange={e => {
+                setVoterId(e.target.value);
+                setMessage(""); // clear message on change
+              }}
+              onKeyDown={handleVoterIdKeyDown}
+              aria-label="Voter ID"
+              disabled={addressHasVoted}
+            />
+
+            {addressHasVoted && (
+              <div className="message error" role="alert">
+                ❌ This wallet has already voted.
+              </div>
+            )}
+
+            {candidates.length > 0 ? (
+              <>
+                <label htmlFor="candidate-select">Select Candidate</label>
+                <select
+                  id="candidate-select"
+                  value={selectedCandidate}
+                  onChange={(e) => setSelectedCandidate(e.target.value)}
+                  aria-label="Candidate selection"
+                  disabled={addressHasVoted}
+                >
+                  <option disabled value="">
+                    ⬇️ Select
+                  </option>
+                  {candidates.map((name, idx) => (
+                    <option key={idx} value={name}>
+                      {name}
+                    </option>
+                  ))}
+                </select>
+
+                <div className="button-group">
+                  <button
+                    onClick={handleVote}
+                    disabled={
+                      !selectedCandidate ||
+                      !voterId ||
+                      addressHasVoted
+                    }
+                    aria-label="Vote"
+                  >
+                    ✅ Vote
+                  </button>
+                  <button className="exportBtn" onClick={exportVoteLogs} aria-label="Export votes">
+                    📥 Export
+                  </button>
+                  <button className="resetBtn" onClick={resetBurner} aria-label="Reset wallet">
+                    🔄 Reset Wallet
+                  </button>
+                </div>
+              </>
+            ) : (
+              <p>ℹ️ No candidates found.</p>
+            )}
+          </>
         )}
 
-        {/* 📊 Live Vote Count */}
-        {Object.keys(voteCounts).length > 0 && (
-          <div className="results" data-aos="fade-up">
-            <h3>📊 Live Vote Tally</h3>
-            <ul>
-              {Object.entries(voteCounts).map(([name, count]) => (
-                <li key={name} className={votedFor === name ? 'votedSelf' : ''}>
-                  {name}: {count} vote(s) {votedFor === name && <span>✅</span>}
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
+        {/* Live Voting Count Area */}
+        <div className="results" data-aos="fade-up">
+          <h3>📊 Live Vote Tally</h3>
+          <ul className="vote-tally-list">
+            {candidates.map((name, idx) => (
+              <li
+                key={idx}
+                className="vote-tally-item"
+              >
+                <span className="candidate-name">{name}</span>
+                <span className="vote-count">
+                  {voteCounts[name] ?? "0"}{" "}
+                  <span className="vote-label">
+                    vote{(voteCounts[name] ?? "0") === "1" ? "" : "s"}
+                  </span>
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
 
-        {/* ⛳ Result Message */}
         {message && (
-          <div className={`message ${message.startsWith('✅') ? 'success' : message.startsWith('❌') ? 'error' : ''}`}>
+          <div
+            className={`message ${
+              message.startsWith("✅") ? "success" : message.startsWith("❌") ? "error" : ""
+            }`}
+            role="alert"
+          >
             {message}
           </div>
         )}
       </section>
+
+      <footer>
+        Built with ❤️ by{" "}
+        <a
+          href="https://github.com/protonexe"
+          target="_blank"
+          rel="noreferrer"
+          style={{ color: "var(--accent)", textDecoration: "underline" }}
+        >
+          protonexe
+        </a>
+      </footer>
     </div>
   );
 }

@@ -5,6 +5,11 @@
         "internalType": "string[]",
         "name": "_candidates",
         "type": "string[]"
+      },
+      {
+        "internalType": "string[]",
+        "name": "_voterIds",
+        "type": "string[]"
       }
     ],
     "stateMutability": "nonpayable",
@@ -14,10 +19,10 @@
     "anonymous": false,
     "inputs": [
       {
-        "indexed": true,
-        "internalType": "address",
-        "name": "voter",
-        "type": "address"
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "voterIdHash",
+        "type": "bytes32"
       },
       {
         "indexed": false,
@@ -28,25 +33,6 @@
     ],
     "name": "VoteCast",
     "type": "event"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "name": "candidates",
-    "outputs": [
-      {
-        "internalType": "string",
-        "name": "",
-        "type": "string"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
   },
   {
     "inputs": [],
@@ -83,12 +69,12 @@
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
+        "internalType": "string",
+        "name": "voterId",
+        "type": "string"
       }
     ],
-    "name": "hasVoted",
+    "name": "isVoterIdRegistered",
     "outputs": [
       {
         "internalType": "bool",
@@ -103,11 +89,30 @@
     "inputs": [
       {
         "internalType": "string",
-        "name": "_candidate",
+        "name": "voterId",
         "type": "string"
       }
     ],
-    "name": "vote",
+    "name": "hasVoterIdVotedFn",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "voterId",
+        "type": "string"
+      }
+    ],
+    "name": "addVoterId",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -116,19 +121,31 @@
     "inputs": [
       {
         "internalType": "string",
-        "name": "",
+        "name": "voterId",
         "type": "string"
       }
     ],
-    "name": "votes",
-    "outputs": [
+    "name": "removeVoterId",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
       {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
+        "internalType": "string",
+        "name": "voterId",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "_candidate",
+        "type": "string"
       }
     ],
-    "stateMutability": "view",
+    "name": "vote",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   }
 ]

@@ -3,10 +3,18 @@ const path = require('path');
 
 async function main() {
   const Voting = await ethers.getContractFactory("Voting");
-  const candidates = ["Alice", "Bob", "Charlie"]; // Change as needed
-  const voting = await Voting.deploy(candidates);
-  await voting.waitForDeployment(); // <-- Ethers v6 syntax
-  console.log("Voting deployed to:", voting.target); // <-- Ethers v6 uses .target
+  const candidates = ["Alice", "Bob", "Charlie"];
+
+  // Read voter IDs from file
+  const voterIdsPath = path.join(__dirname, 'voter_ids.txt');
+  const voterIds = fs.readFileSync(voterIdsPath, 'utf-8')
+    .split('\n')
+    .map(line => line.trim())
+    .filter(line => line.length > 0);
+
+  const voting = await Voting.deploy(candidates, voterIds);
+  await voting.waitForDeployment();
+  console.log("Voting deployed to:", voting.target);
 
   // Write the address to a file in the Hardhat project
   fs.writeFileSync('deployedAddress.json', JSON.stringify({ address: voting.target }, null, 2));

@@ -1,70 +1,147 @@
-# Getting Started with Create React App
+# Blockchain Voting DApp
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A secure, transparent, and user-friendly decentralized voting application built with **Solidity**, **React**, and **Ethers.js**.
 
-## Available Scripts
+![screenshot](public/screencap.png) <!-- (Optional: Add a screenshot of your app) -->
 
-In the project directory, you can run:
+---
 
-### `npm start`
+## 🚀 Features
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+- **On-chain voting:** All votes are recorded on the Ethereum blockchain.
+- **Burner wallets:** Each user gets a temporary wallet for privacy and ease of use.
+- **Live vote tally:** See real-time results as votes are cast.
+- **Exportable logs:** Download all vote events as an Excel file.
+- **Confetti animation:** Celebrate your vote with a fun effect!
+- **Modern UI:** Built with React and AOS for smooth animations.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+---
 
-### `npm test`
+## 🛠️ Tech Stack
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+- **Smart Contract:** Solidity, Hardhat
+- **Frontend:** React, Ethers.js, AOS, XLSX, FileSaver, Canvas-Confetti
+- **Local Blockchain:** Hardhat Network
 
-### `npm run build`
+---
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## 📝 How It Works
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+1. **Start the Hardhat node**  
+   Deploy the `Voting` smart contract locally.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+2. **Run the React frontend**  
+   The app auto-generates a burner wallet, funds it, and connects to the contract.
 
-### `npm run eject`
+3. **Vote!**  
+   Select a candidate and cast your vote. The transaction is sent on-chain.
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+4. **See live results**  
+   The app fetches and displays the current vote tally.
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+5. **Export logs**  
+   Download all vote events as an Excel file for transparency.
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+---
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+## ⚡ Quick Start
 
-## Learn More
+### 1. Clone the repo
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+```sh
+git clone https://github.com/protonexe/voting-block.git
+cd voting-block
+```
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+### 2. Install dependencies
 
-### Code Splitting
+```sh
+# In the root for Hardhat
+npm install
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+# In the frontend folder
+cd frontend
+npm install
+```
 
-### Analyzing the Bundle Size
+### 3. Start Hardhat local node
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+```sh
+npx hardhat node
+```
 
-### Making a Progressive Web App
+### 4. Deploy the contract
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+```sh
+npx hardhat run scripts/deploy.js --network localhost
+```
 
-### Advanced Configuration
+### 5. Start the React app
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+```sh
+cd frontend
+npm start
+```
 
-### Deployment
+### 6. Open in your browser
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+Go to [http://localhost:3000](http://localhost:3000)
 
-### `npm run build` fails to minify
+---
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+## 🌐 Deploying to Vercel
+
+- Push your frontend code to GitHub.
+- Connect your repo to [Vercel](https://vercel.com/).
+- Set any required environment variables in the Vercel dashboard.
+- Vercel will auto-deploy on every push.
+
+---
+
+## 📄 Contract Overview
+
+```solidity
+event VoteCast(address indexed voter, string candidate);
+
+function vote(string memory _candidate) public;
+function getCandidates() public view returns (string[] memory);
+function getVotes(string memory _candidate) public view returns (uint256);
+```
+
+---
+
+## 📦 Project Structure
+
+```
+voting-block/
+├── contracts/           # Solidity contracts
+├── scripts/             # Deployment scripts
+├── frontend/            # React app
+│   ├── src/
+│   ├── public/
+│   └── ...
+├── hardhat.config.js
+└── README.md
+```
+
+---
+
+## 🙏 Credits
+
+- [Ethers.js](https://docs.ethers.org/)
+- [Hardhat](https://hardhat.org/)
+- [React](https://react.dev/)
+- [AOS](https://michalsnik.github.io/aos/)
+- [Vercel](https://vercel.com/)
+
+---
+
+## 📢 License
+
+MIT
+
+---
+
+*Built with ❤️ by [protonexe](https://github.com/protonexe) and contributors.*
+```
+
